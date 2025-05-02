@@ -105,6 +105,8 @@ def start_server(hostname, port_number):
     server_socket.listen(5)
     print('Server is running and ready to accept multiple clients...')
 
+    threading.Thread(target=display_summary).start()
+
     try:
         while True:
             client_socket, client_address = server_socket.accept()
