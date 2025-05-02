@@ -1,6 +1,17 @@
 import socket
 
+tuple_space = {}
+
+total_clients = 0
+total_operations = 0
+total_reads = 0
+total_gets = 0
+total_puts = 0
+total_errors = 0
+
 def handle_client(client_socket, client_address):
+    total_clients += 1
+
     try:
         while True:
             request_message = client_socket.recv(1024).decode('utf-8')
@@ -12,6 +23,36 @@ def handle_client(client_socket, client_address):
                 value = request_message.split(' ')[3]
             else:
                 value = None
+
+            if command == 'R':
+                total_operations += 1
+                total_reads += 1
+
+                if key in tuple_space:
+                    raise NotImplementedError
+                else:
+                    raise NotImplementedError
+            
+            elif command == 'G':
+                total_operations += 1
+                total_gets += 1
+
+                if key in tuple_space:
+                    raise NotImplementedError
+                else:
+                    raise NotImplementedError
+            
+            elif command == 'P':
+                total_operations += 1
+                total_puts += 1
+
+                if key in tuple_space:
+                    raise NotImplementedError
+                else:
+                    raise NotImplementedError
+            
+            client_socket.sendall(response.encode('utf-8'))
+                
     except Exception as e:
         print(f'Error in handling client {client_address}: {e}')
     finally:
