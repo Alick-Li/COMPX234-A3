@@ -33,14 +33,21 @@ def client_task(hostname, port_number, pathname):
                 client_socket.sendall(request_message.encode('utf-8'))
 
                 response_message = client_socket.recv(1024).decode('utf-8')
-                print(f'Received: {response_message}')
+                print(f'{pathname[14:21]} received: {response_message}')
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Error for {pathname[14:21]}: {e}")
     finally:
         client_socket.close()
 
 def main():
-    raise NotImplementedError()
+    clients = []
+    for i in range(1, 11):
+        t = threading.Thread(target=client_task, args=('localhost', 51234, f'Request Files\\client{i}.txt'))
+        clients.append(t)
+        t.start()
+        time.sleep(0.1)
+    for t in clients:
+        t.join()
 
 if __name__ == "__main__":
     main()
