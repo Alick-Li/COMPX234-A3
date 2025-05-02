@@ -41,11 +41,13 @@ def client_task(hostname, port_number, pathname):
 
 def main():
     clients = []
+
     for i in range(1, 11):
         t = threading.Thread(target=client_task, args=('localhost', 51234, f'Request Files\\client{i}.txt'))
         clients.append(t)
         t.start()
         time.sleep(0.1)
+    
     for t in clients:
         t.join()
 
