@@ -96,17 +96,17 @@ def handle_client(client_socket, client_address):
 
 def display_summary():
     while True:
-        print()
-        print(f'Total tuples: {total_tuples}')
-        print(f'Average tuple size: {average_tuple_size}')
-        print(f'Average key size: {average_key_size}')
-        print(f'Average value size: {average_value_size}')
-        print(f'Total clients: {total_clients}')
-        print(f'Total operations: {total_operations}')
-        print(f'Total READs: {total_reads}')
-        print(f'Total GETs: {total_gets}')
-        print(f'Total PUTs: {total_puts}')
-        print(f'Total errors: {total_errors}')
+        print(f'_______________________')
+        print(f'Total Tuples       |{total_tuples}')
+        print(f'Average Tuple Size |{average_tuple_size}')
+        print(f'Average Key Size   |{average_key_size}')
+        print(f'Average Value Size |{average_value_size}')
+        print(f'Total Clients      |{total_clients}')
+        print(f'Total Operations   |{total_operations}')
+        print(f'Total READs        |{total_reads}')
+        print(f'Total GETs         |{total_gets}')
+        print(f'Total PUTs         |{total_puts}')
+        print(f'Total Errors       |{total_errors}')
         time.sleep(10)
 
 def start_server(hostname, port_number):
