@@ -1,4 +1,6 @@
 import socket
+import threading
+import time
 
 tuple_space = {}
 
@@ -10,6 +12,11 @@ total_puts = 0
 total_errors = 0
 
 def handle_client(client_socket, client_address):
+    global total_tuples
+    global average_tuple_size
+    global average_key_size
+    global average_value_size
+
     total_clients += 1
 
     try:
@@ -63,6 +70,31 @@ def handle_client(client_socket, client_address):
         client_socket.close()
         print(f'Connection with {client_address} has been closed.')
 
+        total_tuples = len(tuple_space)
+        if total_tuples > 0:
+            average_tuple_size = sum(len(key) + len(value) for key, value in tuple_space.items()) / total_tuples
+            average_key_size = sum(len(key) for key in tuple_space.keys()) / total_tuples
+            average_value_size = sum(len(value) for value in tuple_space.values()) / total_tuples
+        else:
+            average_tuple_size = 0
+            average_key_size = 0
+            average_value_size = 0
+
+def display_summary():
+    while True:
+        print(f'Total tuples: {total_tuples}')
+        print(f'Average tuple size: {average_tuple_size}')
+        print(f'Average key size: {average_key_size}')
+        print(f'Average value size: {average_value_size}')
+        print(f'Total clients: {total_clients}')
+        print(f'Total operations: {total_operations}')
+        print(f'Total READs: {total_reads}')
+        print(f'Total GETs: {total_gets}')
+        print(f'Total PUTs: {total_puts}')
+        print(f'Total errors: {total_errors}')
+        print()
+        time.sleep(10)
+
 def start_server(hostname, port_number):
     hostname = hostname
     port_number = port_number
@@ -75,7 +107,9 @@ def start_server(hostname, port_number):
 
     try:
         while True:
-            raise NotImplementedError
+            client_socket, client_address = server_socket.accept()
+            client_handler = threading.Thread(target=handle_client, args=(client_socket, client_address))
+            client_handler.start()
     except KeyboardInterrupt:
         print('Shutting down the server...')
     finally:
