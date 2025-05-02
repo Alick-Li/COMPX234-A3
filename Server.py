@@ -29,29 +29,33 @@ def handle_client(client_socket, client_address):
                 total_reads += 1
 
                 if key in tuple_space:
-                    raise NotImplementedError
+                    response_message = f"f'{(16 + len(key) + len(value)):03d}' OK ({key}, {value}) read"
                 else:
-                    raise NotImplementedError
+                    total_errors += 1
+                    response_message = f"f'{(23 + len(key)):03d}' ERR {key} does not exist"
             
             elif command == 'G':
                 total_operations += 1
                 total_gets += 1
 
                 if key in tuple_space:
-                    raise NotImplementedError
+                    response_message = f"f'{(19 + len(key) + len(value)):03d}' OK ({key}, {value}) removed"
                 else:
-                    raise NotImplementedError
+                    total_errors += 1
+                    response_message = f"f'{(23 + len(key)):03d}' ERR {key} does not exist"
             
             elif command == 'P':
                 total_operations += 1
                 total_puts += 1
 
                 if key in tuple_space:
-                    raise NotImplementedError
+                    total_errors += 1
+                    response_message = f"f'{(23 + len(key) + len(value)):03d}' ERR {key} already exists"                    
                 else:
-                    raise NotImplementedError
+                    tuple_space[key] = value
+                    response_message = f"f'{(13 + len(key)):03d}' OK {key} added"
             
-            client_socket.sendall(response.encode('utf-8'))
+            client_socket.sendall(response_message.encode('utf-8'))
                 
     except Exception as e:
         print(f'Error in handling client {client_address}: {e}')
