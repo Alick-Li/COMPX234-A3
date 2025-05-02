@@ -17,8 +17,6 @@ average_key_size = 0
 average_value_size = 0
 
 def handle_client(client_socket, client_address):
-    global tuple_space
-
     global total_clients
     global total_operations
     global total_reads
@@ -26,64 +24,64 @@ def handle_client(client_socket, client_address):
     global total_puts
     global total_errors
 
-    global total_tuples
-    global average_tuple_size
-    global average_key_size
-    global average_value_size
-
     total_clients += 1
 
     try:
         while True:
             request_message = client_socket.recv(1024).decode('utf-8')
-
-            size = request_message.split(' ')[0]
-            command = request_message.split(' ')[1]
-            key = request_message.split(' ')[2]
+            parts = request_message.split(' ')
+            size = parts[0]
+            command = parts[1]
+            key = parts[2]
             if command == 'P':
-                value = request_message.split(' ')[3]
+                value = parts[3]
             else:
                 value = None
 
             if command == 'R':
                 total_operations += 1
                 total_reads += 1
-
                 if key in tuple_space:
-                    response_message = f"f'{(16 + len(key) + len(value)):03d}' OK ({key}, {value}) read"
+                    value = tuple_space[key]
+                    response_message = f"{(16 + len(key) + len(value)):03d} OK ({key}, {value}) read"
                 else:
                     total_errors += 1
-                    response_message = f"f'{(23 + len(key)):03d}' ERR {key} does not exist"
-            
+                    response_message = f"{(23 + len(key)):03d} ERR {key} does not exist"
             elif command == 'G':
                 total_operations += 1
                 total_gets += 1
-
                 if key in tuple_space:
-                    response_message = f"f'{(19 + len(key) + len(value)):03d}' OK ({key}, {value}) removed"
+                    value = tuple_space[key]
+                    del tuple_space[key]
+                    response_message = f"{(19 + len(key) + len(value)):03d} OK ({key}, {value}) removed"
                 else:
                     total_errors += 1
-                    response_message = f"f'{(23 + len(key)):03d}' ERR {key} does not exist"
-            
+                    response_message = f"{(23 + len(key)):03d} ERR {key} does not exist"
             elif command == 'P':
                 total_operations += 1
                 total_puts += 1
-
                 if key in tuple_space:
                     total_errors += 1
-                    response_message = f"f'{(23 + len(key) + len(value)):03d}' ERR {key} already exists"                    
+                    response_message = f"{(23 + len(key) + len(value)):03d} ERR {key} already exists"
                 else:
                     tuple_space[key] = value
-                    response_message = f"f'{(13 + len(key)):03d}' OK {key} added"
-            
+                    response_message = f"{(13 + len(key)):03d} OK {key} added"
+
             client_socket.sendall(response_message.encode('utf-8'))
-                
+
     except Exception as e:
         print(f'Error in handling client {client_address}: {e}')
     finally:
         client_socket.close()
         print(f'Connection with {client_address} has been closed.')
 
+def display_summary():
+    global total_tuples
+    global average_tuple_size
+    global average_key_size
+    global average_value_size
+
+    while True:
         total_tuples = len(tuple_space)
         if total_tuples > 0:
             average_tuple_size = sum(len(key) + len(value) for key, value in tuple_space.items()) / total_tuples
@@ -94,8 +92,6 @@ def handle_client(client_socket, client_address):
             average_key_size = 0
             average_value_size = 0
 
-def display_summary():
-    while True:
         print(f'_______________________')
         print(f'Total Tuples       |{total_tuples}')
         print(f'Average Tuple Size |{average_tuple_size}')
@@ -110,9 +106,6 @@ def display_summary():
         time.sleep(10)
 
 def start_server(hostname, port_number):
-    hostname = hostname
-    port_number = port_number
-
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_address = (hostname, port_number)
     server_socket.bind(server_address)
