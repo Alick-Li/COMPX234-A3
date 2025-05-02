@@ -11,7 +11,21 @@ total_gets = 0
 total_puts = 0
 total_errors = 0
 
+total_tuples = 0
+average_tuple_size = 0
+average_key_size = 0
+average_value_size = 0
+
 def handle_client(client_socket, client_address):
+    global tuple_space
+
+    global total_clients
+    global total_operations
+    global total_reads
+    global total_gets
+    global total_puts
+    global total_errors
+
     global total_tuples
     global average_tuple_size
     global average_key_size
@@ -82,6 +96,7 @@ def handle_client(client_socket, client_address):
 
 def display_summary():
     while True:
+        print()
         print(f'Total tuples: {total_tuples}')
         print(f'Average tuple size: {average_tuple_size}')
         print(f'Average key size: {average_key_size}')
@@ -92,7 +107,6 @@ def display_summary():
         print(f'Total GETs: {total_gets}')
         print(f'Total PUTs: {total_puts}')
         print(f'Total errors: {total_errors}')
-        print()
         time.sleep(10)
 
 def start_server(hostname, port_number):
