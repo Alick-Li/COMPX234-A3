@@ -92,7 +92,7 @@ def display_summary():
             average_key_size = 0
             average_value_size = 0
 
-        print(f'_______________________')
+        print(f'______________________________')
         print(f'Total Tuples       |{total_tuples}')
         print(f'Average Tuple Size |{average_tuple_size}')
         print(f'Average Key Size   |{average_key_size}')
