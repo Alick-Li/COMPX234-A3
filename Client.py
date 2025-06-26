@@ -6,18 +6,18 @@ import time
 tuple_space = {}
 
 # Statistics for monitoring server operations
-total_clients = 0
-total_operations = 0
-total_reads = 0
-total_gets = 0
-total_puts = 0
-total_errors = 0
+total_clients = 0      # Total number of clients connected
+total_operations = 0   # Total number of operations executed
+total_reads = 0        # Total number of READ operations
+total_gets = 0         # Total number of GET operations
+total_puts = 0         # Total number of PUT operations
+total_errors = 0       # Total number of errors occurred
 
 # Statistics for tuple space analysis
-total_tuples = 0
-average_tuple_size = 0
-average_key_size = 0
-average_value_size = 0
+total_tuples = 0           # Current number of tuples in the tuple space
+average_tuple_size = 0     # Average size of each tuple (key + value)
+average_key_size = 0       # Average size of keys
+average_value_size = 0     # Average size of values
 
 def handle_client(client_socket, client_address):
     """
@@ -31,7 +31,7 @@ def handle_client(client_socket, client_address):
     global total_puts
     global total_errors
 
-    total_clients += 1
+    total_clients += 1  # A new client has connected
 
     try:
         while True:
@@ -39,54 +39,57 @@ def handle_client(client_socket, client_address):
             request_message = client_socket.recv(1024).decode('utf-8')
             parts = request_message.split(' ')
             size = parts[0]      # Message size (not used)
-            command = parts[1]   # Operation code: R, G, or P
+            command = parts[1]   # Operation code: R (READ), G (GET), or P (PUT)
             key = parts[2]       # Key for the operation
             if command == 'P':
                 value = parts[3] # Value for PUT command
             else:
-                value = None
+                value = None     # Other operations do not have a value
 
-            # Handle READ operation
+            # Handle READ operation (read without removal)
             if command == 'R':
                 total_operations += 1
                 total_reads += 1
                 if key in tuple_space:
                     value = tuple_space[key]
+                    # Construct a success response message
                     response_message = f"{(16 + len(key) + len(value)):03d} OK ({key}, {value}) read"
                 else:
                     total_errors += 1
+                    # Construct an error response message
                     response_message = f"{(23 + len(key)):03d} ERR {key} does not exist"
 
-            # Handle GET operation
+            # Handle GET operation (read and remove)
             elif command == 'G':
                 total_operations += 1
                 total_gets += 1
                 if key in tuple_space:
                     value = tuple_space[key]
-                    del tuple_space[key]  # Remove the key-value pair after GET
+                    del tuple_space[key]  # Remove key-value pair after GET
                     response_message = f"{(19 + len(key) + len(value)):03d} OK ({key}, {value}) removed"
                 else:
                     total_errors += 1
                     response_message = f"{(23 + len(key)):03d} ERR {key} does not exist"
 
-            # Handle PUT operation
+            # Handle PUT operation (add a new key-value pair)
             elif command == 'P':
                 total_operations += 1
                 total_puts += 1
                 if key in tuple_space:
                     total_errors += 1
+                    # If the key already exists, return an error
                     response_message = f"{(23 + len(key) + len(value)):03d} ERR {key} already exists"
                 else:
                     tuple_space[key] = value  # Add the new key-value pair
                     response_message = f"{(13 + len(key)):03d} OK {key} added"
 
-            # Send response back to the client
+            # Send the response message back to the client
             client_socket.sendall(response_message.encode('utf-8'))
 
     except Exception as e:
         print(f'Error in handling client {client_address}: {e}')
     finally:
-        client_socket.close()
+        client_socket.close()  # Close the connection with the client
         print(f'Connection with {client_address} has been closed.')
 
 def display_summary():
@@ -99,8 +102,9 @@ def display_summary():
     global average_value_size
 
     while True:
-        total_tuples = len(tuple_space)
+        total_tuples = len(tuple_space)  # Current number of key-value pairs
         if total_tuples > 0:
+            # Calculate average tuple size, key size, and value size
             average_tuple_size = sum(len(key) + len(value) for key, value in tuple_space.items()) / total_tuples
             average_key_size = sum(len(key) for key in tuple_space.keys()) / total_tuples
             average_value_size = sum(len(value) for value in tuple_space.values()) / total_tuples
@@ -121,7 +125,7 @@ def display_summary():
         print(f'Total GETs         |{total_gets}')
         print(f'Total PUTs         |{total_puts}')
         print(f'Total Errors       |{total_errors}')
-        time.sleep(10)  # Update every 10 seconds
+        time.sleep(10)  # Update statistics every 10 seconds
 
 def start_server(hostname, port_number):
     """
@@ -149,4 +153,4 @@ def start_server(hostname, port_number):
         server_socket.close()
 
 if __name__ == "__main__":
-    start_server('localhost', 51234)
+    start_server('localhost', 51234)  # Start the server and listen on localhost:51234
