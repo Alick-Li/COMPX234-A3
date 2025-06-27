@@ -30,6 +30,7 @@ def handle_client(client_socket, client_address):
     total_clients += 1
 
     try:
+        # Continuously listen for client requests
         while True:
             # Receive and parse client request
             request_message = client_socket.recv(1024).decode('utf-8')
@@ -46,28 +47,39 @@ def handle_client(client_socket, client_address):
             if command == 'R':
                 total_operations += 1
                 total_reads += 1
+                
+                # Check if key exists in tuple space
                 if key in tuple_space:
+                    # Key found: return the value
                     value = tuple_space[key]
                     response_message = f"{(16 + len(key) + len(value)):03d} OK ({key}, {value}) read"
                 else:
+                    # Key not found: return error
                     total_errors += 1
                     response_message = f"{(23 + len(key)):03d} ERR {key} does not exist"
             # Handle GET command (read and remove)
             elif command == 'G':
                 total_operations += 1
                 total_gets += 1
+                
+                # Check if key exists in tuple space
                 if key in tuple_space:
+                    # Key found: get value and remove from tuple space
                     value = tuple_space[key]
                     del tuple_space[key]
                     response_message = f"{(19 + len(key) + len(value)):03d} OK ({key}, {value}) removed"
                 else:
+                    # Key not found: return error
                     total_errors += 1
                     response_message = f"{(23 + len(key)):03d} ERR {key} does not exist"
             # Handle PUT command
             elif command == 'P':
                 total_operations += 1
                 total_puts += 1
+                
+                # Check if key already exists
                 if key in tuple_space:
+                    # Key already exists: return error
                     total_errors += 1
                     response_message = f"{(23 + len(key) + len(value)):03d} ERR {key} already exists"
                 else:
@@ -94,7 +106,9 @@ def display_summary():
         total_tuples = len(tuple_space)
         if total_tuples > 0:
             average_tuple_size = sum(len(key) + len(value) for key, value in tuple_space.items()) / total_tuples
+            # Average key size across all tuples
             average_key_size = sum(len(key) for key in tuple_space.keys()) / total_tuples
+            # Average value size across all tuples
             average_value_size = sum(len(value) for value in tuple_space.values()) / total_tuples
         else:
             average_tuple_size = 0
